@@ -136,7 +136,7 @@ namespace FloydSteinbergGUI
             this.Pbx_Result.Location = new System.Drawing.Point(0, 0);
             this.Pbx_Result.Name = "Pbx_Result";
             this.Pbx_Result.Size = new System.Drawing.Size(1024, 460);
-            this.Pbx_Result.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.Pbx_Result.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.Pbx_Result.TabIndex = 0;
             this.Pbx_Result.TabStop = false;
             // 
@@ -289,7 +289,6 @@ namespace FloydSteinbergGUI
             this.Gbx_Func.ResumeLayout(false);
             this.Gbx_View.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Pbx_Result)).EndInit();
             this.Gbx_Type.ResumeLayout(false);
             this.Gbx_Type.PerformLayout();
