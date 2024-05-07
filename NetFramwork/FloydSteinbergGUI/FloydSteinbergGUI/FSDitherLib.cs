@@ -20,7 +20,7 @@ namespace FloydSteinbergGUI
                     //BW
                     if (bit == 0)
                     {
-                        retVal = FloydSteinbergDitheringBW8Bit(inputImage, brightness, level);
+                       retVal = FloydSteinbergDitheringBW8Bit(inputImage, brightness, level);
                         //retVal = squareBlur(inputImage);
                     }
                     else
@@ -44,42 +44,43 @@ namespace FloydSteinbergGUI
 
             return retVal;
         }
+
         //Library
         static Bitmap FloydSteinbergDitheringBW8Bit(Bitmap inputImage, double light, double level)
         {
-            Bitmap outputImage = new Bitmap(inputImage.Width, inputImage.Height);
+            bit8Bitmap input8Image = new bit8Bitmap();
+            input8Image.bit8Trans(inputImage);
+            bit8Bitmap output8Image = new bit8Bitmap(inputImage.Width, inputImage.Height);
 
-            for (int y = 0; y < inputImage.Height; y++)
+            for (int y = 0; y < input8Image.Height; y++)
             {
-                for (int x = 0; x < inputImage.Width; x++)
+                for (int x = 0; x < input8Image.Width; x++)
                 {
-                    Color oldPixel = inputImage.GetPixel(x, y);
-                    int newRed = grayscaleLevelCheck(oldPixel.R * light, 8, level); // 将红色值转换为黑白
-                    int newGreen = grayscaleLevelCheck(oldPixel.G * light, 8, level); // 将绿色值转换为黑白
-                    int newBlue = grayscaleLevelCheck(oldPixel.B * light, 8, level); // 将蓝色值转换为黑白
+                    bit8Bitmap.unitBitData oldPixel = input8Image.GetPixel(x, y);
+                    ushort newRed = grayscaleLevelCheck(oldPixel.R * light, 8, level); // 将红色值转换为黑白
+                    ushort newGreen = grayscaleLevelCheck(oldPixel.G * light, 8, level); // 将绿色值转换为黑白
+                    ushort newBlue = grayscaleLevelCheck(oldPixel.B * light, 8, level); // 将蓝色值转换为黑白
                     double luma = Convert.ToDouble(newRed) * 0.2126 + Convert.ToDouble(newGreen) * 0.7152 + Convert.ToDouble(newBlue) * 0.0722;
-                    int newPixel = (int)Math.Round(luma);
-                    outputImage.SetPixel(x, y, Color.FromArgb(newPixel, newPixel, newPixel));
+                    ushort newPixel = (ushort)Math.Round(luma);
+                    output8Image.SetPixel(x, y, oldPixel.A, newPixel, newPixel, newPixel);
 
                     int quantError = oldPixel.R - newPixel;
 
-                    if (x + 1 < inputImage.Width)
-                        PropagateError(inputImage, x + 1, y, quantError, 7.0 / 16.0);
+                    if (x + 1 < input8Image.Width)
+                        PropagateError(input8Image, x + 1, y, quantError, 7.0 / 16.0);
                     if (x - 1 >= 0 && y + 1 < inputImage.Height)
-                        PropagateError(inputImage, x - 1, y + 1, quantError, 3.0 / 16.0);
-                    if (y + 1 < inputImage.Height)
-                        PropagateError(inputImage, x, y + 1, quantError, 5.0 / 16.0);
-                    if (x + 1 < inputImage.Width && y + 1 < inputImage.Height)
-                        PropagateError(inputImage, x + 1, y + 1, quantError, 1.0 / 16.0);
+                        PropagateError(input8Image, x - 1, y + 1, quantError, 3.0 / 16.0);
+                    if (y + 1 < input8Image.Height)
+                        PropagateError(input8Image, x, y + 1, quantError, 5.0 / 16.0);
+                    if (x + 1 < input8Image.Width && y + 1 < input8Image.Height)
+                        PropagateError(input8Image, x + 1, y + 1, quantError, 1.0 / 16.0);
                 }
             }
 
-            return outputImage;
+            return output8Image.bit8TransBmp();
         }
         static Bitmap FloydSteinbergDitheringBW(Bitmap inputImage, double light, double level)
         {
-            //Bitmap outputImage = new Bitmap(inputImage.Width, inputImage.Height);
-
             bit10Bitmap input10Image = new bit10Bitmap();
             input10Image.bit8Transbit10(inputImage);
             bit10Bitmap output10Image = new bit10Bitmap(inputImage.Width, inputImage.Height);
@@ -148,35 +149,37 @@ namespace FloydSteinbergGUI
         }
         static Bitmap FloydSteinbergDitheringColor8bit(Bitmap inputImage, double light, double level)
         {
-            Bitmap outputImage = new Bitmap(inputImage.Width, inputImage.Height);
+            bit8Bitmap input8Image = new bit8Bitmap();
+            input8Image.bit8Trans(inputImage);
+            bit8Bitmap output8Image = new bit8Bitmap(inputImage.Width, inputImage.Height);
 
-            for (int y = 0; y < inputImage.Height; y++)
+            for (int y = 0; y < input8Image.Height; y++)
             {
-                for (int x = 0; x < inputImage.Width; x++)
+                for (int x = 0; x < input8Image.Width; x++)
                 {
-                    Color oldPixel = inputImage.GetPixel(x, y);
+                    bit8Bitmap.unitBitData oldPixel = input8Image.GetPixel(x, y);
                     // Console.WriteLine($"A = {oldPixel.A}, R = {oldPixel.R}, G = {oldPixel.G}, B = {oldPixel.B}");
-                    int newRed = grayscaleLevelCheck(oldPixel.R * light, 8, level); // 将红色值转换为黑白
-                    int newGreen = grayscaleLevelCheck(oldPixel.G * light, 8, level); // 将绿色值转换为黑白
-                    int newBlue = grayscaleLevelCheck(oldPixel.B * light, 8, level); // 将蓝色值转换为黑白
-                    outputImage.SetPixel(x, y, Color.FromArgb(newRed, newGreen, newBlue));
+                    ushort newRed = grayscaleLevelCheck(oldPixel.R * light, 8, level); // 将红色值转换为黑白
+                    ushort newGreen = grayscaleLevelCheck(oldPixel.G * light, 8, level); // 将绿色值转换为黑白
+                    ushort newBlue = grayscaleLevelCheck(oldPixel.B * light, 8, level); // 将蓝色值转换为黑白
+                    output8Image.SetPixel(x, y, oldPixel.A, newRed, newGreen, newBlue);
 
                     int quantErrorRed = Convert.ToInt32(Math.Round((oldPixel.R * light - newRed)));
                     int quantErrorGreen = Convert.ToInt32(Math.Round((oldPixel.G * light - newGreen)));
                     int quantErrorBlue = Convert.ToInt32(Math.Round((oldPixel.B * light - newBlue)));
 
-                    if (x + 1 < inputImage.Width)
-                        PropagateError(inputImage, x + 1, y, quantErrorRed, quantErrorGreen, quantErrorBlue, 7.0 / 16.0);
-                    if (x - 1 >= 0 && y + 1 < inputImage.Height)
-                        PropagateError(inputImage, x - 1, y + 1, quantErrorRed, quantErrorGreen, quantErrorBlue, 3.0 / 16.0);
-                    if (y + 1 < inputImage.Height)
-                        PropagateError(inputImage, x, y + 1, quantErrorRed, quantErrorGreen, quantErrorBlue, 5.0 / 16.0);
-                    if (x + 1 < inputImage.Width && y + 1 < inputImage.Height)
-                        PropagateError(inputImage, x + 1, y + 1, quantErrorRed, quantErrorGreen, quantErrorBlue, 1.0 / 16.0);
+                    if (x + 1 < input8Image.Width)
+                        PropagateError(input8Image, x + 1, y, quantErrorRed, quantErrorGreen, quantErrorBlue, 7.0 / 16.0);
+                    if (x - 1 >= 0 && y + 1 < input8Image.Height)
+                        PropagateError(input8Image, x - 1, y + 1, quantErrorRed, quantErrorGreen, quantErrorBlue, 3.0 / 16.0);
+                    if (y + 1 < input8Image.Height)
+                        PropagateError(input8Image, x, y + 1, quantErrorRed, quantErrorGreen, quantErrorBlue, 5.0 / 16.0);
+                    if (x + 1 < input8Image.Width && y + 1 < input8Image.Height)
+                        PropagateError(input8Image, x + 1, y + 1, quantErrorRed, quantErrorGreen, quantErrorBlue, 1.0 / 16.0);
                 }
             }
 
-            return outputImage;
+            return output8Image.bit8TransBmp();
         }
         //階層
         static ushort grayscaleLevelCheck(double originColor, ushort bitcount, double level)
@@ -188,9 +191,9 @@ namespace FloydSteinbergGUI
             return newColor;
 
         }
-        static void PropagateError(Bitmap image, int x, int y, int quantError, double ratio)
+        static void PropagateError(bit8Bitmap image, int x, int y, int quantError, double ratio)
         {
-            Color pixel = image.GetPixel(x, y);
+            bit8Bitmap.unitBitData pixel = image.GetPixel(x, y);
             int newRed = (int)(Math.Round(pixel.R + quantError * ratio));
             int newGreen = (int)Math.Round(pixel.G + quantError * ratio);
             int newBlue = (int)Math.Round(pixel.B + quantError * ratio);
@@ -199,7 +202,7 @@ namespace FloydSteinbergGUI
             newGreen = Math.Min(255, Math.Max(0, newGreen));
             newBlue = Math.Min(255, Math.Max(0, newBlue));
 
-            image.SetPixel(x, y, Color.FromArgb(newRed, newGreen, newBlue));
+            image.SetPixel(x, y, 255, (ushort)newRed, (ushort)newGreen, (ushort)newBlue);
         }
         static void PropagateError(bit10Bitmap image, int x, int y, int quantError, double ratio)
         {
@@ -228,9 +231,9 @@ namespace FloydSteinbergGUI
 
             image.SetPixel(x, y, pixel.A, (ushort)newRed, (ushort)newGreen, (ushort)newBlue);
         }
-        static void PropagateError(Bitmap image, int x, int y, int quantErrorRed, int quantErrorGreen, int quantErrorBlue, double ratio)
+        static void PropagateError(bit8Bitmap image, int x, int y, int quantErrorRed, int quantErrorGreen, int quantErrorBlue, double ratio)
         {
-            Color pixel = image.GetPixel(x, y);
+            bit8Bitmap.unitBitData pixel = image.GetPixel(x, y);
             int newRed = (int)Math.Round(pixel.R + quantErrorRed * ratio);
             int newGreen = (int)Math.Round(pixel.G + quantErrorGreen * ratio);
             int newBlue = (int)Math.Round(pixel.B + quantErrorBlue * ratio);
@@ -239,7 +242,7 @@ namespace FloydSteinbergGUI
             newGreen = Math.Min(255, Math.Max(0, newGreen));
             newBlue = Math.Min(255, Math.Max(0, newBlue));
 
-            image.SetPixel(x, y, Color.FromArgb(255, newRed, newGreen, newBlue));
+            image.SetPixel(x, y, pixel.A, (ushort)newRed, (ushort)newGreen, (ushort)newBlue);
         }
 
 
@@ -381,6 +384,103 @@ namespace FloydSteinbergGUI
                     int r = (int)Math.Round(pixelData.R * 255.0 / 1023.0);
                     int g = (int)Math.Round(pixelData.G * 255.0 / 1023.0);
                     int b = (int)Math.Round(pixelData.B * 255.0 / 1023.0);
+
+                    // 確保每個通道值在合法範圍內
+                    a = Math.Max(0, Math.Min(255, a));
+                    r = Math.Max(0, Math.Min(255, r));
+                    g = Math.Max(0, Math.Min(255, g));
+                    b = Math.Max(0, Math.Min(255, b));
+
+                    // 創建新的 Color 物件並設定像素
+                    Color color = Color.FromArgb(a, r, g, b);
+                    bitmap.SetPixel(x, y, color);
+                }
+            }
+
+            return bitmap;
+        }
+    }
+
+    public class bit8Bitmap
+    {
+        public class unitBitData
+        {
+            public int posX { get; set; }
+            public int posY { get; set; }
+            public ushort A { get; set; }
+            public ushort R { get; set; }
+            public ushort G { get; set; }
+            public ushort B { get; set; }
+        }
+
+        public bit8Bitmap(int width = 0, int height = 0)
+        {
+            _width = width;
+            _height = height;
+            bit8BmpData = new unitBitData[width * height];
+        }
+
+        private unitBitData[] bit8BmpData = { };
+
+        private int _width = 0;
+        private int _height = 0;
+        public int Width { get => _width; }
+        public int Height { get => _height; }
+
+        public void bit8Trans(Bitmap origimBmp)
+        {
+            _width = origimBmp.Width;
+            _height = origimBmp.Height;
+            bit8BmpData = new unitBitData[Width * Height];
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    unitBitData unitPixel = new unitBitData();
+                    unitPixel.posX = x;
+                    unitPixel.posY = y;
+                    var argb = origimBmp.GetPixel(x, y);
+                    unitPixel.A = (ushort)Math.Round((double)argb.A);
+                    unitPixel.R = (ushort)Math.Round((double)argb.R);
+                    unitPixel.G = (ushort)Math.Round((double)argb.G);
+                    unitPixel.B = (ushort)Math.Round((double)argb.B);
+                    bit8BmpData[y * Width + x] = unitPixel;
+                }
+            }
+        }
+
+        public unitBitData GetPixel(int x, int y)
+        {
+            int index = y * Width + x;
+            return bit8BmpData[index];
+        }
+
+        public void SetPixel(int x, int y, ushort A, ushort R, ushort G, ushort B)
+        {
+            int index = y * Width + x;
+            if (bit8BmpData[index] == null)
+            {
+                bit8BmpData[index] = new unitBitData();
+            }
+            bit8BmpData[index].A = A;
+            bit8BmpData[index].R = R;
+            bit8BmpData[index].G = G;
+            bit8BmpData[index].B = B;
+        }
+
+        public Bitmap bit8TransBmp()
+        {
+            Bitmap bitmap = new Bitmap(Width, Height);
+
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    unitBitData pixelData = GetPixel(x, y);
+                    int a = (int)Math.Round((double)pixelData.A);
+                    int r = (int)Math.Round((double)pixelData.R);
+                    int g = (int)Math.Round((double)pixelData.G);
+                    int b = (int)Math.Round((double)pixelData.B);
 
                     // 確保每個通道值在合法範圍內
                     a = Math.Max(0, Math.Min(255, a));
